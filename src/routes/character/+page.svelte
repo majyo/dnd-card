@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card, Navbar } from 'flowbite-svelte';
+	import { Card, Navbar, Checkbox } from 'flowbite-svelte';
 	
 	// --- Type Definitions ---
 	type AbilityKey = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
@@ -53,6 +53,7 @@
 			{ name: 'Sleight of Hand', proficient: false },
 			{ name: 'Stealth', proficient: false }
 		],
+		CON: [],
 		INT: [
 			{ name: 'Arcana', proficient: false },
 			{ name: 'History', proficient: false },
@@ -76,6 +77,40 @@
 	});
 
 	let proficiencyBonus = $state(2); // 熟练加值
+
+	// --- Hit Points State ---
+	let maxHitPoints = $state(25);
+	let currentHitPoints = $state(25);
+	
+	// --- Hit Dice State ---
+	interface HitDice {
+	    current: number;
+	    max: number;
+	    size: 6 | 8 | 10 | 12;
+	}
+	let hitDice: HitDice = $state({
+	    current: 1,
+	    max: 1,
+	    size: 10
+	});
+
+	let tempHp = $state(0);
+
+	// --- Saving Throws State ---
+	let savingThrows = $state({
+		STR: false,
+		DEX: false,
+		CON: false,
+		INT: false,
+		WIS: false,
+		CHA: false
+	});
+
+	// --- Death Saves State ---
+	let deathSaves = $state({
+		successes: [false, false, false],
+		failures: [false, false, false]
+	});
 </script>
 
 <div class="bg-background">
@@ -137,16 +172,85 @@
 			<!-- Status Panel -->
 			<Card class="bg-surface text-content">
 				<h3 class="mb-4 text-xl font-semibold">Status</h3>
-				<div class="h-64 rounded bg-background-lighter p-4">
-					<p class="text-content-muted">Status placeholder</p>
+				<div class="space-y-4 rounded bg-background-lighter p-4">
+					<div class="flex justify-between items-center">
+						<span class="font-semibold">Hit Points:</span>
+						<div class="flex items-center">
+							<input
+								type="number"
+								class="w-16 text-center bg-background rounded px-2 py-1 text-content"
+								bind:value={currentHitPoints}
+							/>
+							<span class="mx-1">/</span>
+							<input
+								type="number"
+								class="w-16 text-center bg-background rounded px-2 py-1 text-content"
+								bind:value={maxHitPoints}
+							/>
+						</div>
+					</div>
+					<div class="flex justify-between items-center">
+						<span class="font-semibold">Hit Dice:</span>
+						<div class="flex items-center gap-1">
+							<input
+								type="number"
+								class="w-8 text-center bg-background rounded px-2 py-1 text-content"
+								bind:value={hitDice.current}
+								min="0"
+							/>
+							<span>/</span>
+							<input
+								type="number"
+								class="w-8 text-center bg-background rounded px-2 py-1 text-content"
+								bind:value={hitDice.max}
+								min="0"
+							/>
+							<span class="ml-2">d</span>
+							<select
+								bind:value={hitDice.size}
+								class="w-16 text-center bg-background rounded px-2 py-1 text-content"
+							>
+								<option value="6">6</option>
+								<option value="8">8</option>
+								<option value="10">10</option>
+								<option value="12">12</option>
+							</select>
+						</div>
+					</div>
+					<div class="flex justify-between">
+						<span class="font-semibold">Temp HP:</span>
+						<span>{tempHp}</span>
+					</div>
+					<hr class="my-2"/>
+					<h4 class="font-semibold">Death Saves</h4>
+					<div class="space-y-2">
+						<div class="flex items-center space-x-2">
+							<span class="w-24">Successes:</span>
+							{#each deathSaves.successes as success, index}
+								<Checkbox 
+									bind:checked={deathSaves.successes[index]}
+									id={"death-save-success-" + index}
+									class="w-6 h-6 text-green-500 hide-check" />
+							{/each}
+						</div>
+						<div class="flex items-center space-x-2">
+							<span class="w-24">Failures:</span>
+							{#each deathSaves.failures as failure, index}
+								<Checkbox 
+									bind:checked={deathSaves.failures[index]}
+									id={"death-save-failure-" + index}
+									class="w-6 h-6 text-red-500 hide-check" />
+							{/each}
+						</div>
+					</div>
 				</div>
 			</Card>
 
 			<!-- Equipment Panel -->
 			<Card class="bg-surface text-content">
-				<h3 class="mb-4 text-xl font-semibold">Extra Status</h3>
+				<h3 class="mb-4 text-xl font-semibold">Basic Info</h3>
 				<div class="h-64 rounded bg-background-lighter p-4">
-					<p class="text-content-muted">Equipment placeholder</p>
+					<p class="text-content-muted">Basic Info placeholder</p>
 				</div>
 			</Card>
 		</div>
@@ -183,9 +287,8 @@
 											</span>
 											<span class="text-accent">
 												{getBonusString(
-													skill.proficient
-														? proficiencyBonus + abilitiesBonus[ability as AbilityKey]
-														: 0
+													abilitiesBonus[ability as AbilityKey] +
+														(skill.proficient ? proficiencyBonus : 0)
 												)}
 											</span>
 										</span>
@@ -199,3 +302,10 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(.hide-check:checked) {
+		/* Hide the default check mark */
+		background-image: none !important;
+	}
+</style>
