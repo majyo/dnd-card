@@ -77,6 +77,10 @@
 	});
 
 	let proficiencyBonus = $state(2); // 熟练加值
+	
+	let armorClass = $state(10);
+	let walkingSpeed = $state(30);
+	let initiative = $state(0);
 
 	// --- Hit Points State ---
 	let maxHitPoints = $state(25);
@@ -208,7 +212,7 @@
 							<span class="ml-2">d</span>
 							<select
 								bind:value={hitDice.size}
-								class="w-16 text-center bg-background rounded px-2 py-1 text-content"
+								class="w-18 text-left bg-background rounded px-2 py-1 text-content"
 							>
 								<option value="6">6</option>
 								<option value="8">8</option>
@@ -246,11 +250,40 @@
 				</div>
 			</Card>
 
-			<!-- Equipment Panel -->
+			<!-- Basic Info Card -->
 			<Card class="bg-surface text-content">
 				<h3 class="mb-4 text-xl font-semibold">Basic Info</h3>
-				<div class="h-64 rounded bg-background-lighter p-4">
-					<p class="text-content-muted">Basic Info placeholder</p>
+				<div class="p-4">
+					<div class="grid grid-cols-2 gap-4">
+						<div class="flex flex-col">
+							<label class="text-content-muted">AC</label>
+							<input type="number"
+								bind:value={armorClass}
+								class="w-full text-center bg-background rounded px-2 py-1 text-content"
+							/>
+						</div>
+						<div class="flex flex-col">
+							<label class="text-content-muted">Proficiency Bonus</label>
+							<input type="number"
+								bind:value={proficiencyBonus}
+								class="w-full text-center bg-background rounded px-2 py-1 text-content"
+							/>
+						</div>
+						<div class="flex flex-col">
+							<label class="text-content-muted">Walking Speed</label>
+							<input type="number"
+								bind:value={walkingSpeed}
+								class="w-full text-center bg-background rounded px-2 py-1 text-content"
+							/>
+						</div>
+						<div class="flex flex-col">
+							<label class="text-content-muted">Initiative</label>
+							<input type="number"
+								bind:value={initiative}
+								class="w-full text-center bg-background rounded px-2 py-1 text-content"
+							/>
+						</div>
+					</div>
 				</div>
 			</Card>
 		</div>
