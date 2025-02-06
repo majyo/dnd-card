@@ -1,34 +1,85 @@
 <script lang="ts">
 	import { Card, Navbar } from 'flowbite-svelte';
 	
-	// 添加能力值响应式变量
-	let abilities = {
+	// --- Type Definitions ---
+	type AbilityKey = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
+
+	interface Skill {
+		name: string;
+		proficient: boolean;
+	}
+
+	type SkillsMap = {
+		[key in AbilityKey]: Skill[];
+	};
+
+	// --- Ability State ---
+	let abilities = $state({
 		STR: 10,
 		DEX: 10,
 		CON: 10,
 		INT: 10,
 		WIS: 10,
 		CHA: 10
-	};
+	});
 
-	// 添加响应式声明
-	$: modifiers = {
-		STR: getModifier(abilities.STR),
-		DEX: getModifier(abilities.DEX),
-		CON: getModifier(abilities.CON),
-		INT: getModifier(abilities.INT),
-		WIS: getModifier(abilities.WIS),
-		CHA: getModifier(abilities.CHA)
-	};
+	// Derive ability bonus for each ability
+	let abilitiesBonus = $derived({
+		STR: getAbilityBonus(abilities.STR),
+		DEX: getAbilityBonus(abilities.DEX),
+		CON: getAbilityBonus(abilities.CON),
+		INT: getAbilityBonus(abilities.INT),
+		WIS: getAbilityBonus(abilities.WIS),
+		CHA: getAbilityBonus(abilities.CHA)
+	});
 
-	// 能力加值计算函数
-	function getModifier(score: number) {
+	// Calculate ability bonus (as a number)
+	function getAbilityBonus(score: number): number {
 		const mod = Math.floor((score - 10) / 2);
-		return mod > 0 ? `+${mod}` : mod === 0 ? '±0' : mod;
+		return mod;
 	}
+
+	// Format bonus with sign
+	function getBonusString(bonus: number): string {
+		return bonus > 0 ? `+${bonus}` : bonus === 0 ? '+0' : String(bonus);
+	}
+
+	// --- Skill State ---
+	// Each ability key maps to a list of skills (with an initial proficient state).
+	let skillsByAbility: SkillsMap = $state({
+		STR: [{ name: 'Athletics', proficient: false }],
+		DEX: [
+			{ name: 'Acrobatics', proficient: false },
+			{ name: 'Sleight of Hand', proficient: false },
+			{ name: 'Stealth', proficient: false }
+		],
+		INT: [
+			{ name: 'Arcana', proficient: false },
+			{ name: 'History', proficient: false },
+			{ name: 'Investigation', proficient: false },
+			{ name: 'Nature', proficient: false },
+			{ name: 'Religion', proficient: false }
+		],
+		WIS: [
+			{ name: 'Animal Handling', proficient: false },
+			{ name: 'Insight', proficient: false },
+			{ name: 'Medicine', proficient: false },
+			{ name: 'Perception', proficient: false },
+			{ name: 'Survival', proficient: false }
+		],
+		CHA: [
+			{ name: 'Deception', proficient: false },
+			{ name: 'Intimidation', proficient: false },
+			{ name: 'Performance', proficient: false },
+			{ name: 'Persuasion', proficient: false }
+		]
+	});
+
+	let proficiencyBonus = $state(2); // 熟练加值
 </script>
+
 <div class="bg-background">
-   	<!-- Basic Info Row -->
+	<!-- Basic Info Section -->
 	<Navbar class="bg-surface text-content shadow-lg">
 		<div class="grid grid-cols-4 gap-4 w-full p-4">
 			<!-- Character Avatar -->
@@ -55,58 +106,96 @@
 			</div>
 		</div>
 	</Navbar>
-    <div class="min-h-screen p-6">
-    	<!-- Detailed Info Row -->
-    	<div class="grid grid-cols-3 gap-6">
-    		<!-- Ability Panel -->
-    		<Card class="bg-surface text-content">
-    			<h3 class="mb-4 text-xl font-semibold">Abilities</h3>
-    			<div class="space-y-2">
-    				{#each Object.entries(abilities) as [ability, score]}
-    					<div class="flex justify-between items-center rounded bg-background-lighter p-2">
-    						<span class="text-content-muted">{ability}</span>
-    						<div class="flex gap-4 items-center">
-    							<input
-    								type="number"
-    								class="w-16 text-center bg-background rounded px-2 py-1 text-content"
-    								bind:value={abilities[ability as keyof typeof abilities]}
-    							/>
-    							<span class="text-accent w-8 text-right">
-    								{modifiers[ability as keyof typeof modifiers]}
-    							</span>
-    						</div>
-    					</div>
-    				{/each}
-    			</div>
-    		</Card>
 
-    		<!-- Status Panel -->
-    		<Card class="bg-surface text-content">
-    			<h3 class="mb-4 text-xl font-semibold">Status</h3>
-    			<div class="h-64 rounded bg-background-lighter p-4">
-    				<p class="text-content-muted">Status placeholder</p>
-    			</div>
-    		</Card>
-
-    		<!-- Equipment Panel -->
-    		<Card class="bg-surface text-content">
-    			<h3 class="mb-4 text-xl font-semibold">Equipment</h3>
-    			<div class="h-64 rounded bg-background-lighter p-4">
-    				<p class="text-content-muted">Equipment placeholder</p>
-    			</div>
-    		</Card>
-    	</div>
-    </div>
-	<div class="min-h-screen p-6">
+	<!-- Detailed Panels (Abilities, Status, Equipment) -->
+	<div class="p-6">
 		<div class="grid grid-cols-3 gap-6">
+			<!-- Abilities Panel -->
 			<Card class="bg-surface text-content">
-				<h3 class="mb-4 text-xl font-semibold">Skills</h3>
-				<div class="h-64 rounded bg-background-lighter p-4">
-					<p class="text-content-muted">Skills placeholder</p>
+				<h3 class="mb-4 text-xl font-semibold">Abilities</h3>
+				<div class="space-y-3">
+					{#each Object.entries(abilities) as [ability, score]}
+						<div class="rounded bg-background-lighter p-2">
+							<div class="flex justify-between items-center">
+								<span class="text-content-muted">{ability}</span>
+								<div class="flex gap-4 items-center">
+									<input
+										type="number"
+										class="w-16 text-center bg-background rounded px-2 py-1 text-content"
+										bind:value={abilities[ability as AbilityKey]}
+									/>
+									<span class="text-accent w-8 text-right">
+										{getBonusString(abilitiesBonus[ability as AbilityKey])}
+									</span>
+								</div>
+							</div>
+						</div>
+					{/each}
 				</div>
+			</Card>
 
+			<!-- Status Panel -->
+			<Card class="bg-surface text-content">
+				<h3 class="mb-4 text-xl font-semibold">Status</h3>
+				<div class="h-64 rounded bg-background-lighter p-4">
+					<p class="text-content-muted">Status placeholder</p>
+				</div>
+			</Card>
+
+			<!-- Equipment Panel -->
+			<Card class="bg-surface text-content">
+				<h3 class="mb-4 text-xl font-semibold">Extra Status</h3>
+				<div class="h-64 rounded bg-background-lighter p-4">
+					<p class="text-content-muted">Equipment placeholder</p>
+				</div>
 			</Card>
 		</div>
 	</div>
 
+	<!-- Skills Panel -->
+	<div class="min-h-screen p-6">
+		<div class="grid grid-cols-3 gap-6">
+			<Card class="bg-surface text-content">
+				<h3 class="mb-4 text-xl font-semibold">Skills</h3>
+				<div class="space-y-3">
+					{#each Object.entries(skillsByAbility) as [ability, skills]}
+						<div class="rounded bg-background-lighter p-2">
+							<div class="flex justify-between items-center mb-2">
+								<span class="text-content-muted">{ability}</span>
+								<span class="text-accent">
+									{getBonusString(abilitiesBonus[ability as AbilityKey])}
+								</span>
+							</div>
+							<div class="ml-4 space-y-1">
+								{#each skills as skill}
+									<div class="flex justify-between items-center text-sm">
+										<div class="flex items-center gap-2">
+											<input
+												type="checkbox"
+												class="w-4 h-4 text-accent rounded bg-background border-surface"
+												bind:checked={skill.proficient}
+											/>
+											<span class="text-content-muted">{skill.name}</span>
+										</div>
+										<span class="flex gap-4">
+											<span class="text-content-subtle">
+												{getBonusString(abilitiesBonus[ability as AbilityKey])}
+											</span>
+											<span class="text-accent">
+												{getBonusString(
+													skill.proficient
+														? proficiencyBonus + abilitiesBonus[ability as AbilityKey]
+														: 0
+												)}
+											</span>
+										</span>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</Card>
+		</div>
+	</div>
 </div>
