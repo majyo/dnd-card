@@ -256,29 +256,29 @@
 				<div class="p-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div class="flex flex-col">
-							<label class="text-content-muted">AC</label>
-							<input type="number"
+							<label for="ac-input" class="text-content-muted">AC</label>
+							<input id="ac-input" type="number"
 								bind:value={armorClass}
 								class="w-full text-center bg-background rounded px-2 py-1 text-content"
 							/>
 						</div>
 						<div class="flex flex-col">
-							<label class="text-content-muted">Proficiency Bonus</label>
-							<input type="number"
+							<label for="proficiency-input" class="text-content-muted">Proficiency Bonus</label>
+							<input id="proficiency-input" type="number"
 								bind:value={proficiencyBonus}
 								class="w-full text-center bg-background rounded px-2 py-1 text-content"
 							/>
 						</div>
 						<div class="flex flex-col">
-							<label class="text-content-muted">Walking Speed</label>
-							<input type="number"
+							<label for="speed-input" class="text-content-muted">Walking Speed</label>
+							<input id="speed-input" type="number"
 								bind:value={walkingSpeed}
 								class="w-full text-center bg-background rounded px-2 py-1 text-content"
 							/>
 						</div>
 						<div class="flex flex-col">
-							<label class="text-content-muted">Initiative</label>
-							<input type="number"
+							<label for="initiative-input" class="text-content-muted">Initiative</label>
+							<input id="initiative-input" type="number"
 								bind:value={initiative}
 								class="w-full text-center bg-background rounded px-2 py-1 text-content"
 							/>
